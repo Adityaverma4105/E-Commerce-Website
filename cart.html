@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="newstyle.css" />
+  <link rel="stylesheet" href="features.css" />
+    <title>Shoply — Cart</title>    
+</head>
+
+<body>
+<header class="header">
+  <div class="container nav">
+    <a href="index.html" class="brand">Shoply</a>
+    <div class="navlinks">
+      <a href="product.html" class="btn">Products</a>
+      <a href="cart.html" class="btn">Cart</a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <h1>🛒 Your Shopping Cart</h1>
+  <div id="cartRoot">Loading...</div>
+</main>
+
+<script src="app.js"></script>
+<script>
+const root = document.getElementById("cartRoot");
+
+function renderCart() {
+  const items = cartItemsDetailed();
+
+  if (!items.length) {
+    root.innerHTML = `<div class="no-results" style="display: block;">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m10 0h2m-2 0a2 2 0 100 4 2 2 0 000-4zm0 0a2 2 0 100-4 2 2 0 000 4z" />
+      </svg>
+      <h3>Your cart is empty</h3>
+      <a href="product.html" class="btn" style="margin-top: 1rem;">Continue Shopping</a>
+    </div>`;
+    return;
+  }
+
+  const totals = cartTotals();
+
+  root.innerHTML = `
+    <div class="card" style="padding: 2rem;">
+      <table class="table" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="border-bottom: 2px solid #e2e8f0;">
+            <th style="text-align: left; padding: 1rem 0;">Product</th>
+            <th style="text-align: left; padding: 1rem 0;">Price</th>
+            <th style="text-align: left; padding: 1rem 0;">Qty</th>
+            <th style="text-align: left; padding: 1rem 0;">Subtotal</th>
+            <th style="text-align: left; padding: 1rem 0;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(it => `
+            <tr style="border-bottom: 1px solid #f0f0f0;">
+              <td style="padding: 1rem 0;">${it.title}</td>
+              <td style="padding: 1rem 0;">$${it.price.toFixed(2)}</td>
+              <td style="padding: 1rem 0;">
+                <input type="number" class="qty-input" data-id="${it.id}" value="${it.qty}" min="1" style="width:50px; padding: 0.5rem; border: 2px solid #e2e8f0; border-radius: 4px;">
+              </td>
+              <td style="padding: 1rem 0; font-weight: bold; color: #2563eb;">$${it.subtotal.toFixed(2)}</td>
+              <td style="padding: 1rem 0;"><button class="remove-btn" data-id="${it.id}" style="padding: 0.5rem 1rem; background: #fee2e2; color: #ef4444; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.3s;">Remove</button></td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+
+      <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #e2e8f0; text-align: right;">
+        <p style="margin: 0.75rem 0;"><strong>Subtotal:</strong> <span style="color: #2563eb;">$${totals.subtotal.toFixed(2)}</span></p>
+        <p style="margin: 0.75rem 0;"><strong>Shipping:</strong> <span style="color: ${totals.shipping > 0 ? '#f59e0b' : '#22c55e'};">$${totals.shipping.toFixed(2)}</span></p>
+        <p style="margin: 0.75rem 0;"><strong>Tax (12%):</strong> <span style="color: #64748b;">$${totals.tax.toFixed(2)}</span></p>
+        <h2 style="color:#1e40af; margin: 1.5rem 0 0 0; font-size: 1.5rem;"><strong>Total: $${totals.total.toFixed(2)}</strong></h2>
+        <button style="margin-top: 1.5rem; padding: 1rem 2rem; background: #22c55e; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s;">
+          Proceed to Checkout
+        </button>
+      </div>
+    </div>
+  `;
+
+  attachCartHandlers();
+}
+
+function attachCartHandlers() {
+  // Handle qty changes
+  document.querySelectorAll('.qty-input').forEach(input => {
+    input.addEventListener('change', (e) => {
+      const id = e.target.dataset.id;
+      const qty = Number(e.target.value);
+      setQty(id, qty);
+      renderCart();
+    });
+  });
+
+  // Handle remove buttons
+  document.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.target.dataset.id;
+      removeFromCart(id);
+      renderCart();
+      toast('✓ Item removed from cart');
+    });
+  });
+}
+
+renderCart();
+</script>
+
+</body>
+</html>
